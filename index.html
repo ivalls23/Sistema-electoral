@@ -3,18 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Pactos Electorales</title>
+    <title>Dashboard de Pactos Electorales</title>
     <style>
         /* CSS Styles */
-
         body {
             font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             min-height: 100vh;
             margin: 0;
             background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        .dashboard {
+            display: flex;
+            gap: 20px;
+            max-width: 1600px;
+            width: 100%;
         }
 
         .container {
@@ -24,15 +31,18 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             text-align: center;
             max-width: 400px;
-            position: relative;
+            width: 100%;
         }
 
         .parties {
             margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
         }
 
         .party-button {
-            margin: 5px;
             padding: 10px 15px;
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -56,13 +66,12 @@
         }
 
         .pie-chart {
-            position: relative;
             margin-top: 20px;
         }
 
         .viability-message {
-            font-size: 1em;
-            margin-top: 10px;
+            font-size: 1.5em;
+            margin-top: -175px;
             height: 20px; /* Fixed height to reserve space */
             color: transparent; /* Hidden by default */
         }
@@ -75,16 +84,15 @@
             color: red;
         }
 
-        /* Vertical central line over the chart */
-        .center-line {
-            position: absolute;
-            top: 64%;
-            left: 50%;
-            height: 40px; /* Adjust according to the chart size */
-            width: 0;
-            border-left: 2px solid #666;
-            transform: translate(-50%, -50%);
-            z-index: 2; /* Ensures the line is on top of the chart */
+        /* Styling for the right-side fixed charts */
+        .fixed-chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
         }
     </style>
 
@@ -92,192 +100,231 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Calculadora de Pactos Electorales</h1>
-        <p>Pulse sobre cada partido para calcular mayorías:</p>
-        <div class="parties">
-            <button class="party-button" data-party="PP" data-seats="117" style="color: rgb(0, 85, 167);">PP (117)</button>
-            <button class="party-button" data-party="PSOE" data-seats="112" style="color: rgb(237, 28, 36);">PSOE (112)</button>
-            <button class="party-button" data-party="Vox" data-seats="44" style="color: rgb(90, 192, 53);">Vox (44)</button>
-            <button class="party-button" data-party="SUMAR" data-seats="44" style="color: rgb(237, 111, 145);">SUMAR (44)</button>
-            <button class="party-button" data-party="ERC" data-seats="7" style="color: rgb(243, 178, 23);">ERC (7)</button>
-            <button class="party-button" data-party="JUNTS" data-seats="6" style="color: rgb(64, 224, 208);">JUNTS (6)</button>
-            <button class="party-button" data-party="EH Bildu" data-seats="5" style="color: rgb(3, 207, 181);">EH Bildu (5)</button>
-            <button class="party-button" data-party="EAJ-PNV" data-seats="5" style="color: rgb(0, 149, 38);">EAJ-PNV (5)</button>
-            <button class="party-button" data-party="PACMA" data-seats="3" style="color: rgb(192, 7, 35);">PACMA (3)</button>
-            <button class="party-button" data-party="BNG" data-seats="3" style="color: rgb(115, 177, 230);">BNG (3)</button>
-            <button class="party-button" data-party="CUP" data-seats="2" style="color: rgb(212, 255, 55);">CUP (2)</button>
-            <button class="party-button" data-party="CCa" data-seats="2" style="color: rgba(255, 162, 55, 0.425);">CCa (2)</button>
+    <div class="dashboard">
+        <!-- Left side: Pactómetro Ley Valls -->
+        <div class="container">
+            <h1>Pactómetro Ley Valls</h1>
+            <p>Pulse sobre cada partido para calcular mayorías:</p>
+            <div class="parties" id="valls-parties">
+                <button class="party-button" data-party="PP" data-seats="117" style="color: rgb(0, 85, 167);">PP (117)</button>
+                <button class="party-button" data-party="PSOE" data-seats="112" style="color: rgb(237, 28, 36);">PSOE (112)</button>
+                <button class="party-button" data-party="Vox" data-seats="44" style="color: rgb(90, 192, 53);">Vox (44)</button>
+                <button class="party-button" data-party="SUMAR" data-seats="44" style="color: rgb(237, 111, 145);">SUMAR (44)</button>
+                <button class="party-button" data-party="ERC" data-seats="7" style="color: rgb(243, 178, 23);">ERC (7)</button>
+                <button class="party-button" data-party="JUNTS" data-seats="6" style="color: rgb(64, 224, 208);">JUNTS (6)</button>
+                <button class="party-button" data-party="EH Bildu" data-seats="5" style="color: rgb(3, 207, 181);">EH Bildu (5)</button>
+                <button class="party-button" data-party="EAJ-PNV" data-seats="5" style="color: rgb(0, 149, 38);">EAJ-PNV (5)</button>
+                <button class="party-button" data-party="PACMA" data-seats="3" style="color: rgb(192, 7, 35);">PACMA (3)</button>
+                <button class="party-button" data-party="BNG" data-seats="3" style="color: rgb(115, 177, 230);">BNG (3)</button>
+                <button class="party-button" data-party="CUP" data-seats="2" style="color: rgb(212, 255, 55);">CUP (2)</button>
+                <button class="party-button" data-party="CCa" data-seats="2" style="color: rgba(255, 162, 55, 0.425);">CCa (2)</button>
+            </div>
+            <div class="results">
+                <p>Mayoría: <span>176 escaños</span></p>
+                <p>Total Seleccionado: <span id="valls-total-seats">0</span> escaños</p>
+            </div>
+            <div id="valls-chart" class="pie-chart"></div>
+            <p class="viability-message" id="valls-viability-message"></p>
         </div>
-        <div class="results">
-            <p>Mayoría: <span id="majority">176 escaños</span></p>
-            <p>Total Seleccionado: <span id="total-seats">0</span> escaños</p>
-        </div>
-        
-        <div id="chart" class="pie-chart"></div>
 
-        <!-- Viability message directly below the chart with fixed space -->
-        <p class="viability-message" id="viability-message"></p>
-        
-        <!-- Permanent center vertical line -->
-        <div class="center-line"></div>
+        <!-- Right side: fixed, non-interactive charts -->
+        <div class="fixed-chart-container">
+            <h2>Resultados Ley Valls</h2>
+            <div id="fixed-chart" class="pie-chart"></div>
+
+            <h2>Resultados Ley d'Hondt</h2>
+            <div id="hondt-chart" class="pie-chart"></div>
+        </div>
+
+        <!-- Rightmost side: Pactómetro Ley d'Hondt -->
+        <div class="container">
+            <h1>Pactómetro Ley d'Hondt</h1>
+            <p>Pulse sobre cada partido para calcular mayorías:</p>
+            <div class="parties" id="hondt-parties">
+                <button class="party-button" data-party="PP" data-seats="137" style="color: rgb(0, 85, 167);">PP (137)</button>
+                <button class="party-button" data-party="PSOE" data-seats="121" style="color: rgb(237, 28, 36);">PSOE (121)</button>
+                <button class="party-button" data-party="Vox" data-seats="33" style="color: rgb(90, 192, 53);">Vox (33)</button>
+                <button class="party-button" data-party="SUMAR" data-seats="31" style="color: rgb(237, 111, 145);">SUMAR (31)</button>
+                <button class="party-button" data-party="ERC" data-seats="7" style="color: rgb(243, 178, 23);">ERC (7)</button>
+                <button class="party-button" data-party="JUNTS" data-seats="7" style="color: rgb(64, 224, 208);">JUNTS (7)</button>
+                <button class="party-button" data-party="EH Bildu" data-seats="6" style="color: rgb(3, 207, 181);">EH Bildu (6)</button>
+                <button class="party-button" data-party="EAJ-PNV" data-seats="5" style="color: rgb(0, 149, 38);">EAJ-PNV (5)</button>
+                <button class="party-button" data-party="BNG" data-seats="1" style="color: rgb(115, 177, 230);">BNG (1)</button>
+                <button class="party-button" data-party="CCa" data-seats="1" style="color: rgba(255, 162, 55, 0.425);">CCa (1)</button>
+                <button class="party-button" data-party="UPN" data-seats="1" style="color: rgba(255, 215, 0, 0.8);">UPN (1)</button>
+            </div>
+            <div class="results">
+                <p>Mayoría: <span>176 escaños</span></p>
+                <p>Total Seleccionado: <span id="hondt-total-seats">0</span> escaños</p>
+            </div>
+            <div id="hondt-pactometro-chart" class="pie-chart"></div>
+            <p class="viability-message" id="hondt-viability-message"></p>
+        </div>
     </div>
 
     <script>
-        const totalSeats = 350;
         const majority = 176;
-        let selectedSeats = 0;
 
-        // Configure colors for each party
-        const partyColors = {
-            "PP": "#0055A7",
-            "PSOE": "#ED1C24",
-            "Vox": "#5AC035",
-            "SUMAR": "#ED6F91",
-            "ERC": "#F3B217",
-            "JUNTS": "#40E0D0",
-            "EH Bildu": "#03CFA5",
-            "EAJ-PNV": "#009526",
-            "PACMA": "#C00723",  // Convertit a hexadecimal
-            "BNG": "#73B1E6",    // Convertit a hexadecimal
-            "CUP": "#D4FF37",    // Convertit a hexadecimal
-            "CCa": "#FFA237"     // Convertit a hexadecimal
-        };
+        // Variables and functions for Pactómetro Ley Valls
+        function initializePactometer(containerId, chartId, totalSeatsId, messageId, dataSet) {
+            let selectedSeats = 0;
+            const selectedParties = [];
+            const totalSeats = 350;
+            const partyColors = {
+                "PP": "#0055A7", "PSOE": "#ED1C24", "Vox": "#5AC035", "SUMAR": "#ED6F91",
+                "ERC": "#F3B217", "JUNTS": "#40E0D0", "EH Bildu": "#03CFA5", "EAJ-PNV": "#009526",
+                "PACMA": "#C00723", "BNG": "#73B1E6", "CUP": "#D4FF37", "CCa": "#FFA237", "UPN": "#FFD700"
+            };
 
-        let selectedParties = [];
-        let selectedColors = [];
-
-        // Configure ApexCharts options for a semi-donut chart without tooltips
-        const options = {
-            series: [0, totalSeats],
-            labels: ["Seleccionados", "Restantes"],
-            chart: {
-                type: 'donut',
-                height: 300,
-            },
-            plotOptions: {
-                pie: {
-                    startAngle: -90,
-                    endAngle: 90,
-                    donut: {
-                        size: '70%'
+            const options = {
+                series: [0, totalSeats],
+                labels: ["Seleccionados", "Restantes"],
+                chart: {
+                    type: 'donut',
+                    height: 400,
+                },
+                plotOptions: {
+                    pie: {
+                        startAngle: -90,
+                        endAngle: 90,
+                        donut: { size: '50%' }
                     }
-                }
-            },
-            tooltip: {
-                enabled: false // Disable tooltips to hide "Seleccionados" and "Restantes"
-            },
-            colors: ["#ededed"],
-            dataLabels: {
-                enabled: false
-            },
-            legend: {
-                show: false
-            },
-            title: {
-                text: 'Distribución de escaños',
-                align: 'center',
-                margin: 20,
-                style: {
-                    fontSize: '16px',
-                    color: '#333'
-                }
-            },
-            annotations: {
-                position: 'back',
-                yaxis: [{
-                    y: majority,
-                    strokeDashArray: 4,
-                    borderColor: '#666',
-                }]
-            },
-            responsive: [{
-                breakpoint: 480,
-                options: {
-                    chart: {
-                        width: 300
-                    }
-                }
-            }]
-        };
+                },
+                tooltip: { enabled: false },
+                colors: ["#ededed"],
+                dataLabels: { enabled: false },
+                legend: { show: false },
+                title: {
+                    text: 'Distribución de escaños',
+                    align: 'center',
+                    style: { fontSize: '16px', color: '#333' }
+                },
+            };
 
-        const chart = new ApexCharts(document.querySelector("#chart"), options);
-        chart.render();
+            const chart = new ApexCharts(document.querySelector(`#${chartId}`), options);
+            chart.render();
 
-        // JavaScript for interactivity
-        document.addEventListener('DOMContentLoaded', function() {
-            const totalSeatsElement = document.getElementById('total-seats');
-            const viabilityMessage = document.getElementById('viability-message');
-
-            document.querySelectorAll('.party-button').forEach(button => {
+            document.querySelectorAll(`#${containerId} .party-button`).forEach(button => {
                 button.addEventListener('click', function() {
-                    const party = this.getAttribute('data-party');
-                    const seats = parseInt(this.getAttribute('data-seats'));
+                    const seats = parseInt(button.getAttribute('data-seats'));
+                    const color = partyColors[button.getAttribute('data-party')];
 
-                    // Toggle selection and update seat count
-                    if (this.classList.toggle('selected')) {
+                    if (button.classList.toggle('selected')) {
                         selectedSeats += seats;
-                        selectedParties.push({ seats, color: partyColors[party] });
+                        selectedParties.push({ seats, color });
                     } else {
                         selectedSeats -= seats;
-                        const index = selectedParties.findIndex(p => p.seats === seats);
-                        if (index !== -1) {
-                            selectedParties.splice(index, 1);
-                        }
+                        const index = selectedParties.findIndex(p => p.seats === seats && p.color === color);
+                        if (index !== -1) selectedParties.splice(index, 1);
                     }
-                    totalSeatsElement.textContent = selectedSeats;
 
-                    // Show viability message based on total selected seats
-                    updateViabilityMessage(selectedSeats);
-
-                    // Update the chart with the new selected seats, colors, and remaining seats
-                    updatePieChart(selectedParties, selectedSeats);
+                    document.getElementById(totalSeatsId).textContent = selectedSeats;
+                    updateViabilityMessage(selectedSeats, messageId);
+                    updatePieChart(selectedParties, selectedSeats, totalSeats, chart);
                 });
             });
+        }
 
-            function updateViabilityMessage(seats) {
-                if (seats > 0) {
-                    viabilityMessage.style.display = 'block';
-                    if (seats >= majority) {
-                        viabilityMessage.textContent = '✅ Tu pacto sería viable';
-                        viabilityMessage.className = 'viability-message success';
-                    } else {
-                        viabilityMessage.textContent = '❌ No obtendría mayoría';
-                        viabilityMessage.className = 'viability-message fail';
-                    }
-                } else {
-                    viabilityMessage.style.display = 'block';
-                    viabilityMessage.textContent = ''; // Empty text keeps the space
-                    viabilityMessage.className = 'viability-message'; // Reset class
-                }
+        function updateViabilityMessage(seats, messageId) {
+            const messageElement = document.getElementById(messageId);
+            if (seats >= majority) {
+                messageElement.textContent = '✅ Tu pacto sería viable';
+                messageElement.className = 'viability-message success';
+            } else {
+                messageElement.textContent = '❌ No obtendría mayoría';
+                messageElement.className = 'viability-message fail';
             }
+        }
 
-            function updatePieChart(parties, seats) {
-                // Order parties by seats in descending order
-                const orderedParties = parties.slice().sort((a, b) => b.seats - a.seats);
-                
-                // Separate data and colors after sorting
-                const updatedSeries = orderedParties.map(p => p.seats);
-                const updatedColors = orderedParties.map(p => p.color);
+        function updatePieChart(parties, seats, totalSeats, chart) {
+            const orderedParties = parties.slice().sort((a, b) => b.seats - a.seats);
+            const updatedSeries = orderedParties.map(p => p.seats);
+            const updatedColors = orderedParties.map(p => p.color);
+            const remainingSeats = totalSeats - seats;
+            updatedSeries.push(remainingSeats);
+            updatedColors.push("#ededed");
 
-                // Add remaining seats to the series
-                const remainingSeats = totalSeats - seats;
-                updatedSeries.push(remainingSeats);
-                updatedColors.push("#ededed");
+            chart.updateSeries(updatedSeries);
+            chart.updateOptions({ colors: updatedColors });
+        }
 
-                chart.updateSeries(updatedSeries);
-                chart.updateOptions({
-                    colors: updatedColors,
-                    annotations: {
-                        yaxis: [{
-                            y: majority,
-                            strokeDashArray: 4,
-                            borderColor: '#666',
-                        }]
-                    }
-                });
-            }
+        // Initialize both Pactómetros independently
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePactometer('valls-parties', 'valls-chart', 'valls-total-seats', 'valls-viability-message', 'Ley Valls');
+            initializePactometer('hondt-parties', 'hondt-pactometro-chart', 'hondt-total-seats', 'hondt-viability-message', 'Ley dHondt');
         });
+
+        // Static charts options for fixed results
+        const fixedOptionsValls = {
+    series: [117, 112, 44, 44, 7, 6, 5, 5, 3, 3, 2, 2],
+    labels: ["PP", "PSOE", "Vox", "SUMAR", "ERC", "JUNTS", "EH Bildu", "EAJ-PNV", "PACMA", "BNG", "CUP", "CCa"],
+    chart: {
+        type: 'donut',
+        height: 400,
+    },
+    plotOptions: {
+        pie: { startAngle: -90, endAngle: 90, donut: { size: '50%' } }
+    },
+    colors: ["#0055A7", "#ED1C24", "#5AC035", "#ED6F91", "#F3B217", "#40E0D0", "#03CFA5", "#009526", "#C00723", "#73B1E6", "#D4FF37", "#FFA237"],
+    dataLabels: { enabled: false },
+    legend: {
+        show: true,
+        position: 'bottom',
+        horizontalAlign: 'center',
+        floating: true,
+        fontSize: '12px',
+        offsetY: -100,
+        markers: {
+            width: 10,
+            height: 10,
+            radius: 5,
+        },
+        itemMargin: {
+            horizontal: 10,
+            vertical: 3
+        }
+    },
+    tooltip: { enabled: true },
+    title: { text: 'Distribució dels Escons', align: 'center', style: { fontSize: '16px', color: '#333' } }
+};
+
+const fixedOptionsHondt = {
+    series: [137, 121, 33, 31, 7, 7, 6, 5, 1, 1, 1],
+    labels: ["PP", "PSOE", "Vox", "SUMAR", "ERC", "JUNTS", "EH Bildu", "EAJ-PNV", "BNG", "CCa", "UPN"],
+    chart: {
+        type: 'donut',
+        height: 400,
+    },
+    plotOptions: {
+        pie: { startAngle: -90, endAngle: 90, donut: { size: '50%' } }
+    },
+    colors: ["#0055A7", "#ED1C24", "#5AC035", "#ED6F91", "#F3B217", "#40E0D0", "#03CFA5", "#009526", "#73B1E6", "#FFA237", "#C00723"],
+    dataLabels: { enabled: false },
+    legend: {
+        show: true,
+        position: 'bottom',
+        horizontalAlign: 'center',
+        floating: true,
+        fontSize: '12px',
+        offsetY: -100,
+        markers: {
+            width: 10,
+            height: 10,
+            radius: 5,
+        },
+        itemMargin: {
+            horizontal: 10,
+            vertical: 3
+        }
+    },
+    tooltip: { enabled: true },
+    title: { text: 'Distribución de escaños', align: 'center', style: { fontSize: '16px', color: '#333' } }
+};
+
+// Render the fixed charts
+new ApexCharts(document.querySelector("#fixed-chart"), fixedOptionsValls).render();
+new ApexCharts(document.querySelector("#hondt-chart"), fixedOptionsHondt).render();
+
     </script>
 </body>
 </html>
