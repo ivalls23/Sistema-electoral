@@ -1,0 +1,211 @@
+---
+title: "Eleccions al Congrés 2023"
+subtitle: "Els vots del 23 de juliol repartits amb dos sistemes: el mètode d'Hondt actual i un mètode proporcional amb llista única"
+lang: ca
+format:
+  html:
+    css: estils.css
+    include-in-header:
+      text: |
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+        <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+    embed-resources: true
+    page-layout: custom
+    toc: false
+    html-table-processing: none
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r}
+#| include: false
+library(dplyr)
+source("R/partits.R")
+source("R/grafics.R")
+
+visor  <- readRDS("data/visor_2023.rds")
+estat  <- visor$estat
+totals <- visor$totals
+mapa   <- readRDS("data/mapa_2023.rds")
+
+# Dades del mapa i el pactòmetre, en JSON, per a visor.js
+partits_pacte <- estat |>
+  filter(escons_nou > 0 | escons_dhondt > 0) |>
+  arrange(desc(escons_nou), desc(vots)) |>
+  select(nom, color, escons_nou, escons_dhondt)
+
+dades_js <- paste0(
+  '{"prov":', mapa$geo_prov,
+  ',"ccaa":', mapa$geo_ccaa,
+  ',"mun":',  mapa$geo_mun,
+  ',"colors":', mapa$colors,
+  ',"partits":', jsonlite::toJSON(partits_pacte),
+  ',"majoria":', totals$majoria,
+  ',"total_escons":', totals$total_escons, '}'
+)
+dades_js <- gsub("</", "<\\/", dades_js, fixed = TRUE)   # per seguretat dins <script>
+```
+
+::: {.pagina}
+
+::: {.bloc}
+## Diputats
+
+::: {.panel-tabset .commutador}
+### Proporcional
+
+```{r}
+tagList(
+  hemicicle(estat, "nou", totals),
+  llegenda(estat, "nou")
+)
+```
+
+### d'Hondt
+
+```{r}
+tagList(
+  hemicicle(estat, "dhondt", totals),
+  llegenda(estat, "dhondt")
+)
+```
+:::
+
+```{r}
+franja_totals(totals)
+```
+:::
+
+::: {.dues-columnes}
+
+::: {.bloc}
+## Possibles aliances
+
+::: {.panel-tabset .commutador}
+### Proporcional
+
+```{r}
+aliances(estat, "nou", totals)
+```
+
+### d'Hondt
+
+```{r}
+aliances(estat, "dhondt", totals)
+```
+:::
+:::
+
+::: {.bloc}
+## Del d'Hondt al proporcional
+
+```{r}
+comparativa(estat)
+```
+
+::: {.nota}
+Escons de cada partit amb els dos sistemes. Passa el cursor per sobre d'una línia per veure'n el detall.
+:::
+:::
+
+:::
+
+::: {.dues-columnes}
+
+::: {.bloc}
+## Vots i escons
+
+```{r}
+tagList(taula_vots(estat), js_taules())
+```
+:::
+
+::: {.bloc}
+## El sistema proporcional
+
+```{r}
+explicacio_sistema(totals)
+```
+:::
+
+:::
+
+::: {.bloc #mapa}
+## Partit guanyador
+
+```{=html}
+<div class="mapa-marc">
+  <div class="mapa-barra">
+    <div class="mapa-filtre" id="mapa-filtre" role="radiogroup" aria-label="Filtra per partit"></div>
+    <select class="mapa-select" id="mapa-nivell" aria-label="Nivell territorial">
+      <option value="prov">Províncies</option>
+      <option value="ccaa">Comunitats</option>
+      <option value="mun">Municipis</option>
+    </select>
+    <div class="mapa-botons" id="mapa-metode" role="group" aria-label="Sistema electoral">
+      <button type="button" data-v="nou" aria-pressed="true">Proporcional</button>
+      <button type="button" data-v="dhondt" aria-pressed="false">d’Hondt</button>
+    </div>
+  </div>
+  <div class="mapa" id="mapa-leaflet"></div>
+</div>
+```
+
+::: {.nota}
+A les províncies i comunitats, el color és el del partit amb més escons (si empaten, el més votat). Als municipis no s’hi reparteixen escons: el color és el del partit més votat i és el mateix amb els dos sistemes.
+:::
+:::
+
+::: {.bloc}
+## Comunitats
+
+::: {.panel-tabset .commutador}
+### Proporcional
+
+```{r}
+targetes_comunitats(mapa$ccaa_partit, "nou")
+```
+
+### d'Hondt
+
+```{r}
+targetes_comunitats(mapa$ccaa_partit, "dhondt")
+```
+:::
+:::
+
+::: {.bloc #pactometre}
+## Pactòmetre
+
+```{=html}
+<div class="commutador-js">
+  <div class="mapa-botons" id="pacte-metode" role="group" aria-label="Sistema electoral">
+    <button type="button" data-v="nou" aria-pressed="true">Proporcional</button>
+    <button type="button" data-v="dhondt" aria-pressed="false">d’Hondt</button>
+  </div>
+</div>
+<p class="pacte-intro">Tria què votaria cada partit en una investidura. En primera votació cal la majoria absoluta (176 vots a favor); en segona n’hi ha prou amb la majoria simple (més vots a favor que en contra).</p>
+<div class="pacte-cap">
+  <h3>Tria què votarà cada partit</h3>
+  <button type="button" class="pacte-reinicia" id="pacte-reinicia">Reinicia ↺</button>
+</div>
+<div class="pacte-targetes" id="pacte-targetes"></div>
+<div class="pacte-resultat" id="pacte-resultat" aria-live="polite"></div>
+```
+:::
+
+:::
+
+```{r}
+# Dades + JavaScript del mapa, el carrusel i el pactòmetre (al final de la pàgina)
+tagList(
+  js_carrusel(),
+  tags$script(type = "application/json", id = "dades-visor", HTML(dades_js)),
+  tags$script(HTML(paste(readLines("visor.js", encoding = "UTF-8"), collapse = "\n")))
+)
+```
